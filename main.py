@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import pytest
+from selene.support.shared import browser
+from selene import be, have
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+url = 'https://google.com'
+search_input_element = '[name="q"]'
+result_element = '[id="search"]'
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+@pytest.fixture(scope='function', autouse=True)
+def config_chrome():
+    browser.open(url).driver.set_window_size(600, 600)
+    return browser
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+def check_query(query, expected_result):
+    browser.element(search_input_element).should(be.blank).type(query).press_enter()
+    browser.element(result_element).should(have.text(expected_result))
+
+
+def test_positive():
+    check_query(query='selene python', expected_result='Selene - User-oriented Web UI browser tests in Python')
+
+
+def test_negative():
+    check_query(query='<<-4341lsdfsdfsdfswer34', expected_result='')
